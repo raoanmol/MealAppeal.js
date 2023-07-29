@@ -1,15 +1,13 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import LandingPage from './LandingPage';
+import './App.css';
+import RecipeSearch from './RecipeSearch';
 
-const App: React.FC = () => {
+function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<LandingPage />} />
-      </Routes>
-    </Router>
-  )
+    <div className="App">
+      <RecipeSearch />
+    </div>
+  );
 }
 
 export default App;
