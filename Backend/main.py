@@ -1,4 +1,5 @@
 from flask import Flask, request
+from flask_cors import CORS
 from flask_restful import Resource, Api
 import os
 import requests
@@ -12,6 +13,9 @@ app_key = os.getenv("APP_KEY")
 
 app = Flask(__name__)
 api = Api(app)
+CORS(app)
+
+# CORS(app, origin="http://localhost:5173")   # replace with port where your frontend is hosted
 
 class Recipes(Resource):
     def post(self):
