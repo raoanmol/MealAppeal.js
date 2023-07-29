@@ -1,10 +1,9 @@
-from flask import Flask, request
+from flask import Flask, request, jsonify
 from flask_cors import CORS
 from flask_restful import Resource, Api
 import os
 import requests
 from dotenv import load_dotenv
-import json
 
 load_dotenv()
 
@@ -15,11 +14,12 @@ app = Flask(__name__)
 api = Api(app)
 CORS(app)
 
-# CORS(app, origin="http://localhost:5173")   # replace with port where your frontend is hosted
-
 class Recipes(Resource):
     def post(self):
-        ingredients = request.json['ingredients']
+        ingredients = request.json.get('ingredients', [])
+
+        if not isinstance(ingredients, list) or len(ingredients) == 0:
+            return jsonify({'message': 'Invalid ingredients provided'}), 400
 
         result = {'recipes': []}
 
@@ -28,10 +28,9 @@ class Recipes(Resource):
             response = requests.get(api_url)
             data = response.json()
 
-            # Only foods with provided ingredients
             for hit in data["hits"]:
                 recipe_ingredients = hit["recipe"]["ingredientLines"]
-                if all(any(ing.lower() in recipe.lower() for ing in ingredients) for recipe in recipe_ingredients):
+                if all(ing.lower() in ' '.join(recipe_ingredients).lower() for ing in ingredients):
                     result['recipes'].append({
                         'label': hit["recipe"]["label"],
                         'ingredients': recipe_ingredients,
@@ -39,19 +38,8 @@ class Recipes(Resource):
                     })
 
         return result
-    
+
 api.add_resource(Recipes, '/recipes')
 
 if __name__ == '__main__':
     app.run(debug=True)
-
-
-# DOCS
-# Make a post request to /recipes with a JSON containing ingredients
-# This calls the post function in the Recipes class 
-# This will send a request to the Edamam API with each ingredient
-# This is then filtered to only include dishes that use JUST the provided ingredients
-# After that, the label, the ingredients and the recipe URL is returned
-#
-# Example (you will need to import json and requests if you are doing in seperate file):
-# response = requests.post('http://127.0.0.1:5000/recipes', { 'ingredients': ['rice', 'milk', 'sugar'] })
